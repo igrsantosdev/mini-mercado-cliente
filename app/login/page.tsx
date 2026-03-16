@@ -49,7 +49,7 @@ export default function Login() {
     setLoading(true);
     
     try {
-      const res = await fetch('https://seu-admin.vercel.app/api/clientes/auth', {
+      const res = await fetch('https://mini-mercado-app.vercel.app/api/clientes/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cpf: cpfNumeros, telefone: telNumeros }),
