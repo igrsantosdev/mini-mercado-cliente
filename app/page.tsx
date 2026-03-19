@@ -42,7 +42,7 @@ export default function ClienteHome() {
     setLoading(true);
     try {
       // Busca produtos
-      const resProdutos = await fetch('https://seu-admin.vercel.app/api/clientes/produtos');
+      const resProdutos = await fetch('https://mini-mercado-app.vercel.app/api/clientes/produtos');
       if (resProdutos.ok) {
         const data = await resProdutos.json();
         setProdutos(data);
@@ -50,7 +50,7 @@ export default function ClienteHome() {
 
       // Busca fiados do cliente
       const clienteId = JSON.parse(localStorage.getItem('cliente') || '{}').id;
-      const resFiados = await fetch(`https://seu-admin.vercel.app/api/clientes/fiados/${clienteId}`);
+      const resFiados = await fetch(`https://mini-mercado-app.vercel.app/api/clientes/fiados/${clienteId}`);
       if (resFiados.ok) {
         const data = await resFiados.json();
         setFiados(data.fiados || []);
