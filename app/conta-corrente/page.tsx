@@ -31,7 +31,7 @@ export default function ContaCorrente() {
       }
 
       const cliente = JSON.parse(clienteData);
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://orlando-admin.vercel.app';
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://mini-mercado-app.vercel.app';
       
       const res = await fetch(`${API_URL}/api/clientes/conta-corrente/${cliente.id}`);
       if (res.ok) {
