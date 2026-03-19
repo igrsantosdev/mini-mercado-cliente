@@ -1,7 +1,7 @@
-// public/sw.js - Service Worker para PWA
-const CACHE_NAME = 'orlando-v1.0.0';
-const STATIC_CACHE = 'orlando-static-v1.0.0';
-const DYNAMIC_CACHE = 'orlando-dynamic-v1.0.0';
+// public/sw.js - Service Worker Corrigido
+const CACHE_NAME = 'orlando-v1.0.1';
+const STATIC_CACHE = 'orlando-static-v1.0.1';
+const DYNAMIC_CACHE = 'orlando-dynamic-v1.0.1';
 
 // Recursos para cache offline
 const urlsToCache = [
@@ -9,6 +9,8 @@ const urlsToCache = [
   '/login',
   '/catalogo',
   '/fiados',
+  '/conta-corrente',
+  '/perfil',
   '/manifest.json',
 ];
 
@@ -44,55 +46,59 @@ self.addEventListener('activate', (event) => {
   return self.clients.claim();
 });
 
-// Fetch - estratégia Network First com fallback para Cache
+// Fetch - estratégia MELHORADA
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Ignora requisições de extensões do Chrome
-  if (url.protocol === 'chrome-extension:') {
+  // Ignora requisições de extensões
+  if (url.protocol === 'chrome-extension:' || url.protocol === 'chrome:') {
     return;
   }
 
-  // Estratégia para APIs (Network First)
-  if (url.pathname.startsWith('/api/')) {
+  // IMPORTANTE: Para APIs externas - SEMPRE buscar da rede primeiro
+  if (url.origin !== location.origin) {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          // Clone e cache a resposta
-          const responseClone = response.clone();
-          caches.open(DYNAMIC_CACHE).then((cache) => {
-            cache.put(request, responseClone);
-          });
+          // Se for API, cacheia para uso offline
+          if (response.ok) {
+            const responseClone = response.clone();
+            caches.open(DYNAMIC_CACHE).then((cache) => {
+              cache.put(request, responseClone);
+            });
+          }
           return response;
         })
         .catch(() => {
           // Fallback para cache se offline
-          return caches.match(request);
+          return caches.match(request).then((cachedResponse) => {
+            return cachedResponse || new Response(
+              JSON.stringify({ error: 'Sem conexão com a internet' }),
+              {
+                status: 503,
+                statusText: 'Service Unavailable',
+                headers: new Headers({ 'Content-Type': 'application/json' }),
+              }
+            );
+          });
         })
     );
     return;
   }
 
-  // Estratégia para páginas e assets (Cache First com Network Fallback)
-  event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      if (cachedResponse) {
-        // Retorna do cache mas busca atualização em background
+  // Para páginas HTML - Network First com timeout
+  if (request.mode === 'navigate' || request.destination === 'document') {
+    event.respondWith(
+      Promise.race([
+        // Timeout de 3 segundos
+        new Promise((resolve, reject) => 
+          setTimeout(() => reject(new Error('timeout')), 3000)
+        ),
         fetch(request)
-          .then((response) => {
-            caches.open(DYNAMIC_CACHE).then((cache) => {
-              cache.put(request, response);
-            });
-          })
-          .catch(() => {});
-        return cachedResponse;
-      }
-
-      // Não está no cache, busca da rede
-      return fetch(request)
+      ])
         .then((response) => {
-          // Cache a resposta para próxima vez
+          // Cacheia a página
           const responseClone = response.clone();
           caches.open(DYNAMIC_CACHE).then((cache) => {
             cache.put(request, responseClone);
@@ -100,48 +106,48 @@ self.addEventListener('fetch', (event) => {
           return response;
         })
         .catch(() => {
-          // Offline e sem cache - retorna página offline se tiver
-          return caches.match('/');
-        });
+          // Fallback para cache
+          return caches.match(request).then((cachedResponse) => {
+            return cachedResponse || caches.match('/');
+          });
+        })
+    );
+    return;
+  }
+
+  // Para assets (JS, CSS, imagens) - Cache First
+  event.respondWith(
+    caches.match(request).then((cachedResponse) => {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+
+      return fetch(request).then((response) => {
+        if (response.ok) {
+          const responseClone = response.clone();
+          caches.open(DYNAMIC_CACHE).then((cache) => {
+            cache.put(request, responseClone);
+          });
+        }
+        return response;
+      });
     })
   );
 });
 
-// Background Sync (opcional - para sincronizar dados quando voltar online)
-self.addEventListener('sync', (event) => {
-  console.log('[SW] Background sync:', event.tag);
-  if (event.tag === 'sync-fiados') {
+// Mensagem para limpar cache (útil para debug)
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+  
+  if (event.data && event.data.type === 'CLEAR_CACHE') {
     event.waitUntil(
-      // Lógica de sincronização
-      Promise.resolve()
+      caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cacheName) => caches.delete(cacheName))
+        );
+      })
     );
   }
-});
-
-// Push Notifications (opcional - para notificar clientes)
-self.addEventListener('push', (event) => {
-  console.log('[SW] Push notification received');
-  const data = event.data ? event.data.json() : {};
-  const title = data.title || 'Orlando Mercado';
-  const options = {
-    body: data.body || 'Nova notificação',
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
-    vibrate: [200, 100, 200],
-    data: {
-      url: data.url || '/',
-    },
-  };
-
-  event.waitUntil(self.registration.showNotification(title, options));
-});
-
-// Notification Click
-self.addEventListener('notificationclick', (event) => {
-  console.log('[SW] Notification clicked');
-  event.notification.close();
-
-  event.waitUntil(
-    clients.openWindow(event.notification.data.url || '/')
-  );
 });
