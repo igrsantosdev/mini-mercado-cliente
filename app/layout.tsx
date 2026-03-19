@@ -1,4 +1,4 @@
-// app/layout.tsx
+// app/layout.tsx - Com limpeza de cache após login
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
@@ -53,7 +53,7 @@ export default function RootLayout({
       <body className="antialiased">
         {children}
         
-        {/* Service Worker Registration */}
+        {/* Service Worker Registration com controle de cache */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -62,11 +62,43 @@ export default function RootLayout({
                   navigator.serviceWorker.register('/sw.js')
                     .then(registration => {
                       console.log('SW registered:', registration.scope);
+                      
+                      // Verifica se há atualização
+                      registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        newWorker.addEventListener('statechange', () => {
+                          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            // Novo SW instalado, avisar para atualizar
+                            if (confirm('Nova versão disponível! Atualizar agora?')) {
+                              newWorker.postMessage({ type: 'SKIP_WAITING' });
+                              window.location.reload();
+                            }
+                          }
+                        });
+                      });
                     })
                     .catch(error => {
                       console.log('SW registration failed:', error);
                     });
+                    
+                  // Listener para quando SW é ativado
+                  let refreshing = false;
+                  navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    if (!refreshing) {
+                      refreshing = true;
+                      window.location.reload();
+                    }
+                  });
                 });
+                
+                // Função global para limpar cache (útil para debug)
+                window.clearAppCache = () => {
+                  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                    navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_CACHE' });
+                    console.log('Cache cleared! Reloading...');
+                    setTimeout(() => window.location.reload(), 1000);
+                  }
+                };
               }
             `,
           }}
