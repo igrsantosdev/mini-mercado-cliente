@@ -23,7 +23,7 @@ export default function Catalogo() {
   const carregarProdutos = async () => {
     setLoading(true);
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://orlando-admin.vercel.app';
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://mini-mercado-app.vercel.app';
       const res = await fetch(`${API_URL}/api/clientes/produtos`);
       if (res.ok) {
         const data = await res.json();
