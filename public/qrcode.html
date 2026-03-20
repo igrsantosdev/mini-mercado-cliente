@@ -240,29 +240,33 @@
   </div>
 
   <!-- QRious Library (mais confiável e sem CDN externo) -->
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <script>
+  // URL do app
   const APP_URL = 'https://mini-mercado-cliente.vercel.app/install';
 
+  // Gera QR Code quando página carregar
   window.onload = function() {
-    const qrContainer = document.getElementById('qrcode');
-    const urlText = document.getElementById('app-url');
+    try {
+      // Atualiza texto da URL
+      document.getElementById('app-url').textContent = APP_URL;
 
-    urlText.textContent = APP_URL;
+      // Gera QR Code
+      new QRCode(document.getElementById('qrcode'), {
+        text: APP_URL,
+        width: 280,
+        height: 280,
+        colorDark: '#047857',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+      });
 
-    QRCode.toCanvas(qrContainer, APP_URL, {
-      width: 280,
-      color: {
-        dark: '#047857',
-        light: '#ffffff'
-      }
-    }, function (error) {
-      if (error) {
-        qrContainer.innerHTML = '<p class="error">Erro ao gerar QR Code</p>';
-        console.error(error);
-      }
-    });
+    } catch (error) {
+      document.getElementById('qrcode').innerHTML =
+        '<p class="error">Erro ao gerar QR Code. Verifique a URL.</p>';
+      console.error('Erro:', error);
+    }
   };
 </script>
 </body>
