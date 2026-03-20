@@ -1,5 +1,6 @@
 // app/layout.tsx - Com limpeza de cache após login
 import type { Metadata, Viewport } from 'next';
+import UpdatePrompt from './components/UpdatePrompt';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -52,6 +53,9 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         {children}
+        
+        {/* Modal de Atualização */}
+        <UpdatePrompt />
         
         {/* Service Worker Registration com controle de cache */}
         <script
