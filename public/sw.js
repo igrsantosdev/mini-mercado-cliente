@@ -1,5 +1,5 @@
 // public/sw.js - Service Worker Corrigido
-const CACHE_NAME = 'orlando-v1.0.2';
+const CACHE_NAME = 'orlando-v1.0.3';
 const STATIC_CACHE = 'orlando-static-v1.0.2';
 const DYNAMIC_CACHE = 'orlando-dynamic-v1.0.2';
 
