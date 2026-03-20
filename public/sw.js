@@ -1,7 +1,7 @@
 // public/sw.js - Service Worker Corrigido
-const CACHE_NAME = 'orlando-v1.0.1';
-const STATIC_CACHE = 'orlando-static-v1.0.1';
-const DYNAMIC_CACHE = 'orlando-dynamic-v1.0.1';
+const CACHE_NAME = 'orlando-v1.0.2';
+const STATIC_CACHE = 'orlando-static-v1.0.2';
+const DYNAMIC_CACHE = 'orlando-dynamic-v1.0.2';
 
 // Recursos para cache offline
 const urlsToCache = [
