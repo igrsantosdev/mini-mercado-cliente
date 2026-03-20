@@ -131,6 +131,7 @@ export default function ClienteHome() {
 
         {/* Menu Principal */}
         <div className="grid grid-cols-2 gap-4">
+          
           <Link href="/catalogo">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md active:scale-95 transition-all">
               <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-3">
@@ -170,10 +171,22 @@ export default function ClienteHome() {
               <p className="text-xs text-gray-600">Dados pessoais</p>
             </div>
           </Link>
+
+          <Link href="/promocoes">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md active:scale-95 transition-all">
+              <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-3">
+                <Package className="w-6 h-6 text-purple-600" />
+              </div>
+              <h3 className="font-bold text-gray-900 mb-1">Promoções</h3>
+              <p className="text-xs text-gray-600">As melhores promoções</p>
+            </div>
+          </Link>
+        
         </div>
 
         {/* Produtos em Destaque */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+          
           <h2 className="text-lg font-bold text-gray-900 mb-4">Produtos Disponíveis</h2>
           
           {loading ? (
@@ -206,6 +219,7 @@ export default function ClienteHome() {
                   </button>
                 </Link>
               )}
+            
             </div>
           )}
         </div>
